@@ -1,4 +1,4 @@
-//#include <DHTesp.h>         // DHT for ESP32 library
+#include <DHTesp.h>         // DHT for ESP32 library
 #include <WiFi.h>           // WiFi control for ESP32
 #include <ThingsBoard.h>    // ThingsBoard SDK
 
@@ -32,7 +32,7 @@ uint8_t leds_cycling[] = { 25, 26, 32 };
 uint8_t leds_control[] = { 19, 22, 21 };
 
 // DHT object
-// DHTesp dht;
+DHTesp dht;
 // ESP32 pin used to query DHT22
 #define DHT_PIN 33
 
@@ -128,7 +128,7 @@ void setup() {
   }
 
   // Initialize temperature sensor
-  //dht.setup(DHT_PIN, DHTesp::DHT22);
+  dht.setup(DHT_PIN, DHTesp::DHT11);
 }
 
 // Main application loop
@@ -191,13 +191,13 @@ void loop() {
     // Uploads new telemetry to ThingsBoard using MQTT. 
     // See https://thingsboard.io/docs/reference/mqtt-api/#telemetry-upload-api 
     // for more details
-   int test = 10;
-    //TempAndHumidity lastValues = dht.getTempAndHumidity();    
-    if (test == 11) {
+ 
+    TempAndHumidity lastValues = dht.getTempAndHumidity();    
+    if (isnan(lastValues.humidity) || isnan(lastValues.temperature)) {
       Serial.println("Failed to read from DHT sensor!");
     } else {
-      tb.sendTelemetryFloat("temperature", 40);
-      tb.sendTelemetryFloat("humidity", 80);
+      tb.sendTelemetryFloat("temperature", lastValues.temperature);
+      tb.sendTelemetryFloat("humidity", lastValues.humidity);
     }
 
     send_passed = 0;
